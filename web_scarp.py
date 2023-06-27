@@ -12,7 +12,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./chromedriver_win32')
 
 # Initialize the Firebase Admin SDK
 cred = credentials.Certificate('./cred/surfgeo-sale.json')
