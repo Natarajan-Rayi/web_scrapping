@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "surfgeo-sale",
+  "private_key_id": "13c4e875f11bc0f8ad4f1f9ae8951e5f318a44e2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCvPbMrBTKfPp76\nBox6GG1QaFyZxqykY6Ex4XArOMWw2jmSueDfFene5xUcqsW05b7NZDQ9+iLItIwK\n2+x4HtmHIF1pnpGkYl4PSahvsFP/+68JPfcP4cgimWiYyBthgWZdKQZOxA0Ydnk9\nUGx/8z50wKPfqv916LH2JJN9ZiN1dxKe6ZANcYBsZJgNY3VMynhIKez5Z4MtLrLP\nGnTvT5xFINdRUt5gqSpeXNlFQgOyVmlZzlfL6CtCx9IP8pI/X+1b2pxUnqOBfTCe\ny6pcXNvWUdVvAKF/+EmESyQTBdgQed9WxLCEZdOcbRNRnTaIJTsqkQ8882buBR5r\ns+QjqPj9AgMBAAECggEAAdMNHsYJ+sfYOBDB/QvTDrkl00E5W+hgbb7QmaQyK38V\nUvZvcmZUGuRIZa+B3NPFf3YeTlGtc6FGXsVfLV/FpcplXpIH8/B4O58cy09IWJjP\nGWc7pfH7HbnmJManwYVrQoE773oxpRvapq13K7Y/Fx0VHhRPXsCVvB/LKObCBYxV\nTFyFfMPBPvZrvQ4EzElC6YXVKkSkt+UoVc1dt3GsNAT1xwEgFxPyekv7emLWWgCT\n/se9sv/yZsDKAdvQapbwp+kL55+wrTdRLqdImRnJRT34r2+hXB+BQvy6MMQUpHNb\nnUB/gBoN8jRcXDjM26vHJOhTwj7WnK413tEBalz/WwKBgQDUsPIBx+bxgQhSWbec\nMpBEIwYnRRsrfDzqnAv8m4Mj8Q75bfyjgWjdAllpWlW3BahAlORJeE7vYJJRIaWF\ni3qMEnow3jHScDzEc8+sD+EbBIwC3WqQTU7e3G+HKv3Fclq1sCepNSD5dCy53XJP\n6bxAgienJnBZyQQli2KDSpJSlwKBgQDS7JJFQzyWYRxzORJLuYQBph3/rDDOzZ5w\nOtKeSz+G0GzkUTt66vGGyUl/Kaal4fKibNdEHXoqswy77qFxGvFU9gshe+eoUXNz\nWGWEqhCICnMxYRqz0+Yq39eRsLzXeWOwC1myoHElQByRg/DdXLLjXQHJ4C8PRrA/\nSp8brCwHiwKBgQCb0cpqzZX/BkYfdsUSdOTGVlZyvKksEYfbZVlOxmusEDWlPRPi\ngbNefxMcIOc8/7MFJU+eF7rUmo53S8wk60trhTnpxU8A2eNbFXFmn/eNwKYGj0o7\nz7dhhGNcxn1GgwG7rANSbq7qslb2ECtoKlgVdoUwavPSg3c7PkN85kwOnwKBgAQL\np46OiJX1zN7k5FXxe/ewIPkra1A8H2LVrf59QP2r97q1WCe2Y+WK7M70lI6v88Br\nyAE1c4doIcFlBVGvC5vukC4XO00+KrG2q1PNEz4YvTbgPuveD5cY7gCMXELhwCi7\nPwAvFZx6S1H7Lt6ADapQuV0O4LgxSeYc30pflgSbAoGAGqQSqF6vqUyMtJrQLkwj\nLvEO1sz5hqwhfv7NqU5Y5w2RC/sCZ7GiZIyxnuLzcn59MjLzzIOd9onHXaLGYYRf\nOkUY01X3dZRugeUUczHqmomCLNeaVqxkEHHwfa6ECIgBLW5yAwKK869o5t4A0jn/\nThg5wj3gaFF+IJAEur5hEWc=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-vg0c0@surfgeo-sale.iam.gserviceaccount.com",
+  "client_id": "111918696602733673799",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-vg0c0%40surfgeo-sale.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
