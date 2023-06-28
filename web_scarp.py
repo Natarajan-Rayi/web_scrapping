@@ -11,8 +11,9 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from datetime import datetime
+from webdriver_manager import chrome
 
-app = Flask(__name__, template_folder='./chromedriver_win32')
+app = Flask(__name__)
 
 # Initialize the Firebase Admin SDK
 cred = credentials.Certificate('./cred/surfgeo-sale.json')
@@ -71,7 +72,7 @@ def web_scrap():
 
             # Initialize ChromeDriver
             driver = webdriver.Chrome(options=chrome_options,
-                                      keep_alive=chromedriver_path)
+                                      keep_alive=chrome.ChromeDriverManager().install())
             url = 'https://www.mhc.tn.gov.in/judis/clists/clists-madras/index.php'
 
             # Navigate to the URL
