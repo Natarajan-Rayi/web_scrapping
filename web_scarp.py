@@ -72,7 +72,7 @@ def web_scrap():
 
             # Initialize ChromeDriver
             driver = webdriver.Chrome(options=chrome_options,
-                                      keep_alive=chrome.ChromeDriverManager().install())
+                                      keep_alive=chromedriver_path)
             url = 'https://www.mhc.tn.gov.in/judis/clists/clists-madras/index.php'
 
             # Navigate to the URL
