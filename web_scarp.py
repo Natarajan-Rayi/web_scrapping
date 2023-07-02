@@ -11,7 +11,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from datetime import datetime
-from webdriver_manager import chrome
+from webdriver_manager import chrome, firefox
 
 app = Flask(__name__)
 
@@ -68,11 +68,11 @@ def web_scrap():
 
             # Path to the ChromeDriver executable
             # Replace with the actual path to the ChromeDriver executable
-            chromedriver_path = './chromedriver_win32/chromedriver.exe'
+            # chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
             # Initialize ChromeDriver
             driver = webdriver.Chrome(options=chrome_options,
-                                      keep_alive=chromedriver_path)
+                                      keep_alive=firefox.DownloadManager())
             url = 'https://www.mhc.tn.gov.in/judis/clists/clists-madras/index.php'
 
             # Navigate to the URL
