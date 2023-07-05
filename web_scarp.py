@@ -6,12 +6,12 @@ import time
 import pandas as pd
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from datetime import datetime
-from webdriver_manager import chrome, firefox
+from webdriver_manager import chrome
 
 app = Flask(__name__)
 
@@ -32,11 +32,13 @@ def api_check():
 def web_scrap():
     try:
         scarping_date = request.form.get('scarping_date')
+        desired_court_number = request.form.get('court_no')
+
         # Define the collection reference
         collection_ref = db.collection('web_scarp')
 
         # Define the field and value to check against
-        field_name = 'scarping_date'
+        field_name = 'details.scarping_date'
 
         # Query documents where the field is equal to the specified value
         query = collection_ref.where(
@@ -68,11 +70,11 @@ def web_scrap():
 
             # Path to the ChromeDriver executable
             # Replace with the actual path to the ChromeDriver executable
-            # chromedriver_path = './chromedriver_win32/chromedriver.exe'
+            chromedriver_path = './chromedriver_win32/chromedriver.exe'
 
             # Initialize ChromeDriver
             driver = webdriver.Chrome(options=chrome_options,
-                                      keep_alive=firefox.DownloadManager())
+                                      keep_alive=chrome.ChromeDriverManager().install())
             url = 'https://www.mhc.tn.gov.in/judis/clists/clists-madras/index.php'
 
             # Navigate to the URL
@@ -129,6 +131,7 @@ def web_scrap():
             for option in options:
                 print(option.get_attribute("value"))
 
+            select.select_by_value(desired_court_number)
             # Find the "Submit" button element by its class name and click it
             submit_button = driver.find_element(By.CLASS_NAME, 'btn-primary')
             submit_button.click()
@@ -149,9 +152,43 @@ def web_scrap():
 
             # Wait for the table to fully load
             time.sleep(2)
+            court_name = driver.find_element(
+                By.CSS_SELECTOR, 'h2[style="text-align: center; color:#555; margin-bottom:0;"]')
 
+            # Get the text content of the <h2> tag
+            court_text = court_name.text
+            time.sleep(2)
+            # Find all <h2> elements on the page
+            h2_element = driver.find_element(
+                By.CSS_SELECTOR, 'h2[style="text-align: center; color:#555; margin-top:0;"]')
+
+            # Extract the text of the <h2> element
+            cause_list_text = h2_element.text.split('-')[1]
+
+            # Find the element with the class "head_judge"
+            head_judge_element = driver.find_element(
+                By.CLASS_NAME, 'head_judge')
+
+            # Get the inner HTML of the element
+            head_judge_html = head_judge_element.get_attribute('innerHTML')
+
+            # Split the HTML content by "<br>" tags
+            br_splits = head_judge_html.split('<br>')
+
+            # Check if there are at least two "<br>" tags
+            if len(br_splits) >= 3:
+                # Get the text after the second "<br>" tag
+                second_break_text = br_splits[2].strip()
+                print(second_break_text)
+            else:
+                print("Insufficient <br> tags found in the head_judge element.")
+            time.sleep(2)
             # Find all row elements within the table
-            row_elements = table_element.find_elements(By.TAG_NAME, 'tr')
+            tbody_element = table_element.find_element(By.ID, 'tbl')
+
+            # row_elements = table_element.find_elements(By.TAG_NAME, 'tr')
+            # Find all row elements within the <tbody> element
+            row_elements = tbody_element.find_elements(By.TAG_NAME, 'tr')
 
             time.sleep(3)
 
@@ -159,9 +196,13 @@ def web_scrap():
             # Extract the text from each row
             table_data = []
             data_scarp = []
+            stagename_text = ''
             for row_element in row_elements:
                 row_data = []
                 cell_text_list = []
+                # stagename_element = row_element.find_element(
+                #     By.CLASS_NAME, 'stagename_heading')
+                # Get the text content of the element
                 for cell in row_element.find_elements(By.TAG_NAME, 'td'):
                     print(cell, 'cell_value')
                     cell_text_list.append(str(cell.text))
@@ -170,6 +211,10 @@ def web_scrap():
                     # Split the cell text by newline character '\n' and store as separate elements
                     cell_values = cell_text.split('\n')
                     row_data.extend(cell_values)
+                if row_element.get_attribute('class') == 'stagename':
+                    stagename_element = row_element.find_element(
+                        By.CLASS_NAME, 'stagename_heading')
+                    stagename_text = stagename_element.text.strip()
                 temp_group = []
                 output_array = []
                 for i, element in enumerate(cell_text_list):
@@ -180,17 +225,23 @@ def web_scrap():
                         temp_group = []
                 for item in output_array:
                     try:
-                        data_scarp.append({'data': [{'sno': item[0]},
-                                                    {'case_type': item[1].split()[0],
-                                                     'number':item[1].split()[1].split('/')[0], 'year':item[1].split('/')[1]},
-                                                    {'party': item[2]}, {
-                            'petitioner': item[3]},
-                            {'respondent': item[4]}]})
+                        data_scarp.append({'sno': item[0],
+                                           'case_type': item[1].split()[0],
+                                           'number': item[1].split()[1].split('/')[0], 'year': item[1].split('/')[1],
+                                           'caseid': "".join(item[1].split()),
+                                           'petitioner': item[2].split("VS", 1)[0],
+                                           'respondent': item[2].split("VS", 1)[1],
+                                           'petitioner_advocates': item[3],
+                                           'respondent_advocates': item[4],
+                                           'case_category': stagename_text,
+                                           'important': '',
+                                           })
                     except:
-                        data_scarp.append({'data': [{'sno': ''}, {'caseno': ''},
-                                                    {'party': ''}, {
-                            'petitioner': ''},
-                            {'respondent': ''}]})
+                        data_scarp.append({'sno': '', 'caseno': '',
+                                           'party': '',
+                                           'caseid': '',
+                                           'petitioner': '',
+                                           'respondent': ''})
                 print(cell_text_list, 'cell text value')
                 table_data.append(row_data)
             current_timestamp = datetime.now()
@@ -206,8 +257,9 @@ def web_scrap():
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
             doc_ref = db.collection('web_scarp').document()
-            doc_ref.set({"data": data_scarp, "time_stamp": current_timestamp,
-                        "scarping_date": scarping_date})
+            doc_ref.set({"daily_cases": data_scarp, "details": {"time_stamp": current_timestamp,
+                        "scarping_date": scarping_date, 'court_no': desired_court_number, "judge_name": second_break_text, "court_name": court_text,
+                                                                "date": cause_list_text.strip(), "link": ""}})
             # Print the extracted data
             print("Page Source:")
             print(page_source)
@@ -218,6 +270,96 @@ def web_scrap():
             time.sleep(3)
             # Close the browser
             driver.quit()
+
+            data = {'doc_id': doc_ref.id}
+            print("Data complete")
+            # Redirect to the second API endpoint with the data
+            return redirect(url_for('scrap-link', **data))
+    except:
+        return jsonify({'status': 500, "msg": 'internal server issue'})
+
+
+@app.route("/scrap-link", methods=['POST'])
+def link_scrap():
+    try:
+        document_id = request.args.get('doc_id')
+        print(document_id, 'doc_id')
+        chrome_options = Options()
+        # Run Chrome in headless mode, i.e., without opening a browser window
+        chrome_options.add_argument("--headless")
+        # is a line of code that sets a Chrome option to
+        # run the browser in headless mode. This means that the browser will run without opening a
+        # visible window, which can be useful for web scraping tasks where you don't need to interact
+        # with the page visually.
+        chrome_options.add_argument("--headless")
+        # Set window size to simulate a full-sized browser
+        chrome_options.add_argument("--window-size=1920,1200")
+
+        # Path to the ChromeDriver executable
+        # Replace with the actual path to the ChromeDriver executable
+        chromedriver_path = './chromedriver_win32/chromedriver.exe'
+
+        # Initialize ChromeDriver
+        driver = webdriver.Chrome(options=chrome_options,
+                                  keep_alive=chrome.ChromeDriverManager().install())
+
+        # Open the webpage
+        driver.get("https://mhc.tn.gov.in/vclink/vclink.php")
+
+        # Wait for the page to load
+        time.sleep(3)
+
+        # Fill the form fields
+        select_bench = Select(driver.find_element(By.ID, "bench"))
+        # Select "High Court Madras" from the dropdown
+        select_bench.select_by_value("1")
+
+        time.sleep(1)
+
+        select_date = Select(driver.find_element(By.ID, "cdate"))
+        # Select the second option from the dropdown (index 1)
+        select_date.select_by_index(1)
+
+        # Click the "Search" button
+        search_button = driver.find_element(
+            By.XPATH, "//button[contains(text(), 'Search')]")
+        search_button.click()
+
+        # Wait for the search results to load
+        time.sleep(3)
+
+        # Perform further actions with the search results, such as scraping data or interacting with the elements
+        # Find the table rows containing the judge names and links
+        table_rows = driver.find_elements(
+            By.XPATH, "//table[@border='1']/tbody/tr[not(th)]")
+
+        # Iterate over the table rows and extract the link for a specific judge name
+        desired_judge_name = "P.D.AUDIKESAVALU"
+        desired_link = None
+
+        for row in table_rows:
+            judge_name = row.find_element(By.XPATH, "./td[2]").text
+            link_element = row.find_element(By.XPATH, "./td[3]/a")
+
+            if desired_judge_name in judge_name:
+                desired_link = link_element.get_attribute("href")
+                update_data = {"link": desired_link}
+
+                # Update the document
+                doc_ref = db.collection(
+                    "web_scarp").document(document_id)
+                doc_ref.update(update_data)
+                break
+
+        # Print the link for the desired judge name
+        if desired_link:
+            print("Link for", desired_judge_name, ":", desired_link)
+        else:
+            print("No link found for", desired_judge_name)
+
+        # Close the browser window
+        driver.quit()
+
         return jsonify({"message": "scarpping completed"})
     except:
         return jsonify({'status': 500, "msg": 'internal server issue'})
