@@ -6,7 +6,7 @@ import time
 import pandas as pd
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from flask import Flask, jsonify, request, redirect, url_for
+from flask import Flask, jsonify, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
@@ -42,7 +42,8 @@ def web_scrap():
 
         # Query documents where the field is equal to the specified value
         query = collection_ref.where(
-            field_name, '==', scarping_date).limit(1).get()
+            field_name, '==', scarping_date).where(
+            "details.court_no", '==', desired_court_number).limit(1).get()
 
         # Iterate over the query results
         if len(query) > 0:
@@ -260,30 +261,35 @@ def web_scrap():
             doc_ref.set({"daily_cases": data_scarp, "details": {"time_stamp": current_timestamp,
                         "scarping_date": scarping_date, 'court_no': desired_court_number, "judge_name": second_break_text, "court_name": court_text,
                                                                 "date": cause_list_text.strip(), "link": ""}})
-            # Print the extracted data
-            print("Page Source:")
-            print(page_source)
+            document_id = doc_ref.id
+            # Splitting the name by space
+            name_parts = second_break_text.split()
 
-            print("Title:")
-            # print(title_element.text)
-
+            # Extracting the desired part
+            desired_part = ' '.join(name_parts[-1:])
             time.sleep(3)
             # Close the browser
             driver.quit()
 
-            data = {'doc_id': doc_ref.id}
-            print("Data complete")
+            data = {'doc_id': document_id, 'judge_name': desired_part}
+            print("Data complete", document_id)
             # Redirect to the second API endpoint with the data
-            return redirect(url_for('scrap-link', **data))
+            return redirect(url_for('scraplink', **data))
     except:
         return jsonify({'status': 500, "msg": 'internal server issue'})
 
 
-@app.route("/scrap-link", methods=['POST'])
-def link_scrap():
+@app.route("/scraplink", methods=['GET'])
+def scraplink():
     try:
-        document_id = request.args.get('doc_id')
-        print(document_id, 'doc_id')
+        # Use eval to convert string to dictionary
+        # Store the data in session
+        data = request.args
+        print(data, 'document id')
+        document_id = data.get('doc_id')
+        judge_name_get = data.get('judge_name')
+        print(data, document_id, 'document id')
+        # document_id = data[]
         chrome_options = Options()
         # Run Chrome in headless mode, i.e., without opening a browser window
         chrome_options.add_argument("--headless")
@@ -334,7 +340,7 @@ def link_scrap():
             By.XPATH, "//table[@border='1']/tbody/tr[not(th)]")
 
         # Iterate over the table rows and extract the link for a specific judge name
-        desired_judge_name = "P.D.AUDIKESAVALU"
+        desired_judge_name = judge_name_get
         desired_link = None
 
         for row in table_rows:
@@ -343,7 +349,7 @@ def link_scrap():
 
             if desired_judge_name in judge_name:
                 desired_link = link_element.get_attribute("href")
-                update_data = {"link": desired_link}
+                update_data = {"details.link": desired_link}
 
                 # Update the document
                 doc_ref = db.collection(
@@ -363,6 +369,37 @@ def link_scrap():
         return jsonify({"message": "scarpping completed"})
     except:
         return jsonify({'status': 500, "msg": 'internal server issue'})
+
+
+@app.route('/scraping-results', methods=['GET'])
+def query_results():
+    # Initialize Firestore client
+    scarping_date = request.form.get('scarping_date')
+    desired_court_number = request.form.get('court_no')
+
+    # Specify the collection to query
+    collection_ref = db.collection('web_scarp')
+
+    # Define the conditions
+    condition1 = ('details.scarping_date', '==', scarping_date)
+    condition2 = ('details.court_no', '==', desired_court_number)
+
+    # Build the query
+    query = collection_ref.where(*condition1).where(*condition2)
+
+    # Execute the query and get the results
+    results = query.get()
+
+    # Convert the results to a list of dictionaries
+    data = []
+    for doc in results:
+        data.append({
+            'id': doc.id,
+            'data': doc.to_dict()
+        })
+
+    # Return the results as JSON response
+    return jsonify(data)
 
 
 if __name__ == '__main__':
