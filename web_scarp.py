@@ -371,7 +371,7 @@ def scraplink():
         return jsonify({'status': 500, "msg": 'internal server issue'})
 
 
-@app.route('/scraping-results', methods=['GET'])
+@app.route('/scraping-results', methods=['GET', 'POST'])
 def query_results():
     # Initialize Firestore client
     scarping_date = request.form.get('scarping_date')
